@@ -1,6 +1,3 @@
-# news-app-flutter
-Team project 
-
 # dicoding_flutter_news
 
 A new Flutter project.
