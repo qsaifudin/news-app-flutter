@@ -17,8 +17,7 @@ class NewsListPage extends StatefulWidget {
 
 class _NewsListPageState extends State<NewsListPage> {
   late Future<ArticlesResult> _articles;
-
-  get currentKeyword => null;
+  TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -27,39 +26,71 @@ class _NewsListPageState extends State<NewsListPage> {
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('UAU NEWS'),
-        backgroundColor: Colors.red,
       ),
       drawer: const SidebarMenu(),
-      body: FutureBuilder(
-        future: _articles,
-        builder: (context, AsyncSnapshot<ArticlesResult> snapshot) {
-          var state = snapshot.connectionState;
-          if (state != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          } else {
-            if (snapshot.hasData) {
-              return ListView.builder(
-                shrinkWrap: true,
-                itemCount: snapshot.data?.articles.length,
-                itemBuilder: (context, index) {
-                  return _buildArticleItem(
-                      context, snapshot.data!.articles[index]);
-                },
-              );
-            } else if (snapshot.hasError) {
-              return Center(child: Text(snapshot.error.toString()));
-            } else {
-              return const Center(child: Text('Unknown error'));
-            }
-          }
-        },
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                // Perform search/filter logic here
+                // Call a function to update the article list based on the search/filter query
+              },
+              decoration: InputDecoration(
+                hintText: 'Search',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    // Clear the search/filter and display all articles
+                  },
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder(
+              future: _articles,
+              builder: (context, AsyncSnapshot<ArticlesResult> snapshot) {
+                var state = snapshot.connectionState;
+                if (state != ConnectionState.done) {
+                  return const Center(child: CircularProgressIndicator());
+                } else {
+                  if (snapshot.hasData) {
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: snapshot.data?.articles.length,
+                      itemBuilder: (context, index) {
+                        return _buildArticleItem(
+                            context, snapshot.data!.articles[index]);
+                      },
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text(snapshot.error.toString()));
+                  } else {
+                    return const Center(child: Text('Unknown error'));
+                  }
+                }
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
+
 
   Widget _buildArticleItem(BuildContext context, Article article) {
     return ListTile(
